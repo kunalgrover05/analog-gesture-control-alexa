@@ -7,9 +7,11 @@ from ask_sdk_core.dispatch_components import AbstractExceptionHandler
 import logging
 from ask_sdk_model.ui import SimpleCard
 from ask_sdk_model import Response
+import subprocess
 
 sb = SkillBuilder()
 # Register all handlers, interceptors etc.
+process = None
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -44,6 +46,11 @@ class VolumeIntentHandler(AbstractRequestHandler):
         handler_input.response_builder.speak(speech_text).set_card(
             SimpleCard("Hello World", speech_text)).set_should_end_session(
             False)
+
+        # Open a pipe to run the script
+        global process
+        process = subprocess.Popen(["/home/kunal/pycv/bin/python",  "gesture_rec_body.py"], cwd="../")
+
         return handler_input.response_builder.response
 
 
@@ -73,7 +80,9 @@ class CancelOrStopIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
         speech_text = "Goodbye!"
-
+        
+        if process:
+            process.kill()
         handler_input.response_builder.speak(speech_text).set_card(
             SimpleCard("Hello World", speech_text))
         return handler_input.response_builder.response
