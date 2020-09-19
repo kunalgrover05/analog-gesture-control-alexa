@@ -7,9 +7,12 @@ import json
 import requests
 import base64
 import queue
+import math
 
-#vcap = cv2.VideoCapture("rtsp://admin:test1234@192.168.1.14:554"
-vcap = cv2.VideoCapture(0)
+from secrets import password
+
+vcap = cv2.VideoCapture("rtsp://admin:" + password + "@192.168.1.14:554")
+#vcap = cv2.VideoCapture(0)
 
 protoFile = "body/pose_deploy.prototxt.txt"
 weightsFile = "body/pose_iter_584000.caffemodel"
@@ -40,7 +43,7 @@ def http_queue_worker():
             timeDiff = time.time() - item['time']
             if item and timeDiff <= 1:
                 print(f'Working on {item}, timeDiff {timeDiff}')
-                last_response = requests.post('http://192.168.1.10/volume?delta=' + str(item['value']), timeout=3)
+                last_response = requests.post('http://192.168.1.10/volume?delta=' + str(item['value']), timeout=5)
                 print(last_response)
                 print(f'Finished {item}')
             else:
@@ -78,9 +81,9 @@ while(1):
 
     net = cv2.dnn.readNetFromCaffe(protoFile, weightsFile)
 
-    # Fix the input Height and get the width according to the Aspect Ratio
-    inHeight = 100
-    inWidth = int((inHeight/frameHeight)*frameWidth)
+    # Fix the input Height and Width based on defaults.
+    inHeight = 368
+    inWidth = 368
 
     # Create a resized image for processing
     image = cv2.resize(image, (int((480/frameHeight)*frameWidth), 480))
@@ -139,9 +142,8 @@ while(1):
         continue
     
     # Simply take projection into the volume value.
-    volumeDelta = int(5 * normalized_projection)
+    volumeDelta = math.ceil(5 * normalized_projection)
     q.put({'value': volumeDelta, 'time': time.time()})
     print("Normalized", normalized_projection)
     print("Volume", volumeDelta)
-
     print("Total Time Taken in code = {}".format(time.time() - start))
