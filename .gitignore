@@ -2,3 +2,4 @@ body/*
 alexa-handler/env
 secrets.py
 *.pyc
+ProjectorControl/Secrets.h
