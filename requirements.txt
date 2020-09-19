@@ -6,7 +6,6 @@ constantly==15.1.0
 dnspython==2.0.0
 gevent==20.6.2
 greenlet==0.4.16
-grequests==0.6.0
 hyperlink==19.0.0
 idna==2.10
 incremental==17.5.0
@@ -16,7 +15,6 @@ pandas==0.25.3
 pkg-resources==0.0.0
 PyHamcrest==2.0.2
 python-dateutil==2.8.1
-pyttsx3==2.87
 pytz==2019.3
 requests==2.24.0
 requests-threads==0.1.1

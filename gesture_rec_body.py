@@ -3,51 +3,25 @@ import time
 import numpy as np
 import threading
 from threading import Lock
-#vcap = cv2.VideoCapture("rtsp://admin:test1234@192.168.1.14:554")
-vcap = cv2.VideoCapture(0)
-cv2.namedWindow('VIDEO', cv2.WINDOW_NORMAL)
-cv2.resizeWindow('VIDEO', 600, 600)
-protoFile = "body/pose_deploy.prototxt.txt"
-weightsFile = "body/pose_iter_584000.caffemodel"
-nPoints = 22
-
-latest_frame = None
-last_ret = None
-lo = Lock()
-import csv
-import datetime
-
-    
 import json
 import requests
 import base64
+import queue
 
-import pyttsx3
-engine = pyttsx3.init()
-nPoints = 18
-# COCO Output Format
-keypointsMapping = ['Nose', 'Neck', 'R-Sho', 'R-Elb', 'R-Wr', 'L-Sho', 'L-Elb', 'L-Wr', 'R-Hip', 'R-Knee', 'R-Ank', 'L-Hip', 'L-Knee', 'L-Ank', 'R-Eye', 'L-Eye', 'R-Ear', 'L-Ear']
+#vcap = cv2.VideoCapture("rtsp://admin:test1234@192.168.1.14:554"
+vcap = cv2.VideoCapture(0)
 
-POSE_PAIRS = [[1,2], [1,5], [2,3], [3,4], [5,6], [6,7],
-              [1,8], [8,9], [9,10], [1,11], [11,12], [12,13],
-              [1,0], [0,14], [14,16], [0,15], [15,17],
-              [2,17], [5,16] ]
+protoFile = "body/pose_deploy.prototxt.txt"
+weightsFile = "body/pose_iter_584000.caffemodel"
 
-# index of pafs correspoding to the POSE_PAIRS
-# e.g for POSE_PAIR(1,2), the PAFs are located at indices (31,32) of output, Similarly, (1,5) -> (39,40) and so on.
-mapIdx = [[31,32], [39,40], [33,34], [35,36], [41,42], [43,44],
-          [19,20], [21,22], [23,24], [25,26], [27,28], [29,30],
-          [47,48], [49,50], [53,54], [51,52], [55,56],
-          [37,38], [45,46]]
-
+BODY_PARTS = { "RShoulder": 2, "RWrist": 4, "LShoulder": 5 }
 colors = [ [0,100,255], [0,100,255], [0,255,255], [0,100,255], [0,255,255], [0,100,255],
          [0,255,0], [255,200,100], [255,0,255], [0,255,0], [255,200,100], [255,0,255],
          [0,0,255], [255,0,0], [200,200,0], [255,0,0], [200,200,0], [0,0,0]]
 
-import queue
 
+# Queue for HTTP requests
 q = queue.Queue()
-
 def http_queue_worker():
     print("Starting worker")
     while True:
@@ -74,6 +48,10 @@ def http_queue_worker():
         except Exception as e:
             print("Failed", e)
 
+# Variables for RTSP queue
+latest_frame = None
+last_ret = None
+lo = Lock()
 def rtsp_cam_buffer(vcap):
     global latest_frame, lo, last_ret
 
@@ -116,9 +94,6 @@ while(1):
 
     print("Time Taken in forward pass = {}".format(time.time() - start))
 
-    BODY_PARTS = { "RShoulder": 2, "RWrist": 4, "LShoulder": 5 }
-
-
     points = {}
     for part, i in BODY_PARTS.items():
         # Slice heatmap of corresponding body's part.
@@ -132,11 +107,30 @@ while(1):
         y = (frameHeight * point[1]) / output.shape[2]
 
         # Add a point if it's confidence is higher than threshold.
-        location = ((int(x), int(y)) if conf > 0.1 else None)
-        points[part] = location
-        cv2.circle(image, location, 5, colors[BODY_PARTS[part]%len(colors)], -1, cv2.LINE_AA)
+        location = (np.array([int(x), int(y)]) if conf > 0.1 else None)
+        if location is not None:
+            points[part] = location
+            cv2.circle(image, (location[0], location[1]), 5, colors[BODY_PARTS[part]%len(colors)], -1, cv2.LINE_AA)
 
     cv2.imshow("Keypoints", image)
     cv2.waitKey(1)
     print("Total Time Taken in code = {}".format(time.time() - start))
+    
+    if "LShoulder" not in points or "RShoulder" not in points or "RWrist" not in points:
+        continue
+
+    # If all 3 parts were detected, calculate the linear interpolation value.
+    # If wrist is not above the line, skip
+    vec_L = points["LShoulder"] - points["RWrist"]
+    vec_R = -points["RShoulder"] + points["RWrist"]
+    vec_Sho = points["RShoulder"] - points["LShoulder"]
+ 
+    normalized_projection =  np.dot(vec_R, vec_Sho) / np.dot(vec_Sho, vec_Sho)
+
+    # Simply take projection into the volume value.
+    volumeDelta = int(5 * normalized_projection)
+    q.put({'value': volumeDelta, 'time': time.time()})
+    print("Normalized", normalized_projection)
+    print("Volume", volumeDelta)
+   
 
