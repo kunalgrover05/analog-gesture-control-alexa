@@ -67,6 +67,9 @@ threading.Thread(target=http_queue_worker, daemon=True).start()
 # RTSP Buffer worker thread
 threading.Thread(target=rtsp_cam_buffer,args=(vcap,),name="rtsp_read_thread", daemon=True).start()
 
+# Create the network
+net = cv2.dnn.readNetFromCaffe(protoFile, weightsFile)
+
 while(1):
     start = time.time()
     if (last_ret is not None) and (latest_frame is not None):
@@ -75,24 +78,25 @@ while(1):
         time.sleep(0.01)
         continue
 
-    frameWidth = image.shape[1]
-    frameHeight = image.shape[0]
-    print(frameWidth, frameHeight)
 
-    net = cv2.dnn.readNetFromCaffe(protoFile, weightsFile)
-
-    # Fix the input Height and Width based on defaults.
+    # Fix the CNN input Height and Width based on defaults.
     inHeight = 368
     inWidth = 368
 
     # Create a resized image for processing
-    image = cv2.resize(image, (int((480/frameHeight)*frameWidth), 480))
+    frameHeight = 720
+    frameWidth = int((720/image.shape[0])*image.shape[1])
+    image = cv2.resize(image, (frameWidth, frameHeight))
+    print(frameWidth, frameHeight)
     
     inpBlob = cv2.dnn.blobFromImage(image, 1.0 / 255, (inWidth, inHeight),
                               (0, 0, 0), swapRB=False, crop=False)
     net.setInput(inpBlob)
-    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA);
-    net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA);
+    
+    # Magical lines to drop processing time from 4s -> 0.07s!
+    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+
     output = net.forward()
 
     print("Time Taken in forward pass = {}".format(time.time() - start))
@@ -142,7 +146,7 @@ while(1):
         continue
     
     # Simply take projection into the volume value.
-    volumeDelta = math.ceil(5 * normalized_projection)
+    volumeDelta = math.ceil(3 * normalized_projection)
     q.put({'value': volumeDelta, 'time': time.time()})
     print("Normalized", normalized_projection)
     print("Volume", volumeDelta)
