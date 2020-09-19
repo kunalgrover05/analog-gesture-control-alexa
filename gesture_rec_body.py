@@ -112,19 +112,20 @@ while(1):
             points[part] = location
             cv2.circle(image, (location[0], location[1]), 5, colors[BODY_PARTS[part]%len(colors)], -1, cv2.LINE_AA)
 
-    cv2.imshow("Keypoints", image)
-    cv2.waitKey(1)
-    print("Total Time Taken in code = {}".format(time.time() - start))
-    
+    # If all 3 parts were detected, calculate the linear interpolation value.
     if "LShoulder" not in points or "RShoulder" not in points or "RWrist" not in points:
         continue
 
-    # If all 3 parts were detected, calculate the linear interpolation value.
-    # If wrist is not above the line, skip
+    # Draw the enclosing box using LShoulder and top of image
+    cv2.rectangle(image, (points["LShoulder"][0], points["LShoulder"][1]), (points["RShoulder"][0], 0), (0, 255, 255), 2) 
+
+    cv2.imshow("Keypoints", image)
+    cv2.waitKey(1)
+    
+    # TODO: If wrist is not above the line, skip
     vec_L = points["LShoulder"] - points["RWrist"]
     vec_R = -points["RShoulder"] + points["RWrist"]
     vec_Sho = points["RShoulder"] - points["LShoulder"]
- 
     normalized_projection =  np.dot(vec_R, vec_Sho) / np.dot(vec_Sho, vec_Sho)
 
     # Simply take projection into the volume value.
@@ -132,5 +133,5 @@ while(1):
     q.put({'value': volumeDelta, 'time': time.time()})
     print("Normalized", normalized_projection)
     print("Volume", volumeDelta)
-   
 
+    print("Total Time Taken in code = {}".format(time.time() - start))
