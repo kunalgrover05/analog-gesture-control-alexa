@@ -122,12 +122,22 @@ while(1):
     cv2.imshow("Keypoints", image)
     cv2.waitKey(1)
     
-    # TODO: If wrist is not above the line, skip
+    # Vectors for our calculations below
+    #             RWrist
+    #         /           ↖
+    #  vec_L /             \ vec_R
+    #      ↙                \
+    #   LShoulder ------> RShoulder
+    #             vec_Sho
     vec_L = points["LShoulder"] - points["RWrist"]
     vec_R = -points["RShoulder"] + points["RWrist"]
     vec_Sho = points["RShoulder"] - points["LShoulder"]
     normalized_projection =  np.dot(vec_R, vec_Sho) / np.dot(vec_Sho, vec_Sho)
 
+    # If wrist is not above the line, skip
+    if (np.cross(vec_R, vec_Sho) > 0):
+        continue
+    
     # Simply take projection into the volume value.
     volumeDelta = int(5 * normalized_projection)
     q.put({'value': volumeDelta, 'time': time.time()})
