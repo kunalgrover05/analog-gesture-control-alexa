@@ -41,7 +41,7 @@ def http_queue_worker():
                 q.task_done()
             print("Processing last item", item)
             timeDiff = time.time() - item['time']
-            if item and timeDiff <= 1:
+            if item and timeDiff <= 2:
                 print(f'Working on {item}, timeDiff {timeDiff}')
                 last_response = requests.post('http://192.168.1.10/volume?delta=' + str(item['value']), timeout=3)
                 print(last_response)
