@@ -139,14 +139,14 @@ while(1):
     vec_L = points["LShoulder"] - points["RWrist"]
     vec_R = -points["RShoulder"] + points["RWrist"]
     vec_Sho = points["RShoulder"] - points["LShoulder"]
-    normalized_projection =  np.dot(vec_R, vec_Sho) / np.dot(vec_Sho, vec_Sho)
+    normalized_projection =  (np.dot(vec_R, vec_Sho) / np.dot(vec_Sho, vec_Sho)) + 0.5
 
     # If wrist is not above the line, skip
     if (np.cross(vec_R, vec_Sho) > 0):
         continue
     
     # Simply take projection into the volume value.
-    volumeDelta = math.ceil(3 * normalized_projection)
+    volumeDelta = math.ceil(5 * normalized_projection)
     q.put({'value': volumeDelta, 'time': time.time()})
     print("Normalized", normalized_projection)
     print("Volume", volumeDelta)
