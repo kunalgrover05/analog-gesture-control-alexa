@@ -1,4 +1,4 @@
-The next thing for home automation, use gestures to control analog settings around you: Control volume, fan speed, temperature, light brightness using gestures. Exploring how simple and intuitive gestures can replace the limitations of controlling analog settings using knobs and apps. 
+The next thing for home automation, use gestures to control analog settings around you: Control volume, fan speed, temperature, light brightness using gestures. Exploring how simple and intuitive gestures can replace the limitations of controlling analog settings using physical knobs. 
 
 ## Demo
 Working for controlling the volume on my Vankyo V600 projector. The detection works well even in the dark with my Amcrest security camera. 
