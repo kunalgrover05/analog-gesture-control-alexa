@@ -1,5 +1,5 @@
-body/*
+gesture-recognition/body/*
+gesture-recognition/secrets.py
 alexa-handler/env
-secrets.py
 *.pyc
-ProjectorControl/Secrets.h
+ProjectorControlESP/Secrets.h

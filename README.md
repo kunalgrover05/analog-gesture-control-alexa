@@ -12,11 +12,11 @@ Uses OpenPose under the hood for realtime pose detection. Complete writeup of ho
 ![Overall design](https://github.com/kunalgrover05/analog-gesture-control-alexa/blob/master/GestureControl.png)
 
 ## Folder structure
-### Projector control
+### gesture-recognition
+Core directory which contains the script for detecting gestures and converting them to analog values allowing to control devices.
+
+### ProjectorControlESP
 Directory containing ESP8266 code. ESP8266 rnus a HTTP server and handles commands sent to control the volume using Arduino IRSend library.
 
 ### alexa-handler
 Flask server for handling requests coming using Alexa custom skill endpoint. Proxied using NGrok. 
-
-## How to setup
-TODO
