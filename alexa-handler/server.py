@@ -8,10 +8,12 @@ import logging
 from ask_sdk_model.ui import SimpleCard
 from ask_sdk_model import Response
 import subprocess
+from config import GESTURE_REC_ENV, SUBPROCESS_TIMEOUT
+from threading import Timer
 
 sb = SkillBuilder()
-# Register all handlers, interceptors etc.
 process = None
+timer = None
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -26,9 +28,7 @@ class LaunchRequestHandler(AbstractRequestHandler):
         # type: (HandlerInput) -> Response
         speech_text = "Welcome, what do you want to control?"
 
-        handler_input.response_builder.speak(speech_text).set_card(
-            SimpleCard("Hello World", speech_text)).set_should_end_session(
-            False)
+        handler_input.response_builder.speak(speech_text).set_should_end_session(False)
         return handler_input.response_builder.response
 
 
@@ -43,13 +43,20 @@ class VolumeIntentHandler(AbstractRequestHandler):
         # type: (HandlerInput) -> Response
         speech_text = "Welcome to volume control!"
 
-        handler_input.response_builder.speak(speech_text).set_card(
-            SimpleCard("Hello World", speech_text)).set_should_end_session(
-            False)
+        handler_input.response_builder.speak(speech_text).set_should_end_session(False)
 
         # Open a pipe to run the script
-        global process
-        process = subprocess.Popen(["/home/kunal/pycv/bin/python",  "gesture_rec_body.py"], cwd="../")
+        global process, timer
+
+        # Kill existing process and timer
+        if process:
+            process.kill()
+        if timer:
+            timer.cancel()
+
+        process = subprocess.Popen([GESTURE_REC_ENV,  "gesture_rec_openpose.py"], cwd="../gesture-recognition/")
+        timer = Timer(SUBPROCESS_TIMEOUT, process.kill)
+        timer.start()
 
         return handler_input.response_builder.response
 
@@ -83,8 +90,7 @@ class CancelOrStopIntentHandler(AbstractRequestHandler):
         
         if process:
             process.kill()
-        handler_input.response_builder.speak(speech_text).set_card(
-            SimpleCard("Hello World", speech_text))
+        handler_input.response_builder.speak(speech_text)
         return handler_input.response_builder.response
 
 
