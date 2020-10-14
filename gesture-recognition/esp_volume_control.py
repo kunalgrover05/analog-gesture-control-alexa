@@ -3,7 +3,7 @@
 # any new entries added to the queue and processes them. 
 import queue
 import threading
-
+import time
 # Queue for HTTP requests
 http_queue = queue.Queue()
 
