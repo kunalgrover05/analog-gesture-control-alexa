@@ -4,6 +4,9 @@
 import queue
 import threading
 import time
+import requests
+from config import ACTION_TIMEOUT, ENDPOINT_HOST, API_REQUEST_TIMEOUT
+
 # Queue for HTTP requests
 http_queue = queue.Queue()
 

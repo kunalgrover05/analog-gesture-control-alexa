@@ -42,8 +42,8 @@ while(1):
     net.setInput(inpBlob)
     
     # Magical lines to drop processing time from 4s -> 0.07s!
-    #net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    #net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
     output = net.forward()
 
