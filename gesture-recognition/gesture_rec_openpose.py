@@ -89,14 +89,18 @@ while(1):
     #             vec_Sho
     vec_R = -points["RShoulder"] + points["RWrist"]
     vec_Sho = -points["RShoulder"] + points["LShoulder"]
-    normalized_projection = 0.5 - (np.dot(vec_R, vec_Sho) / np.dot(vec_Sho, vec_Sho))
 
+    dot_Sho = np.dot(vec_Sho, vec_Sho)
+    if dot_Sho == 0.0:
+        continue
+    normalized_projection = 0.5 - (np.dot(vec_R, vec_Sho) / dot_Sho)
+    
     # If wrist is not above the line, skip
     if (np.cross(vec_R, vec_Sho) < 0):
         continue
     
     # Simply take projection into the volume value.
-    volumeDelta = math.ceil(5 * normalized_projection)
+    volumeDelta = math.ceil(10 * normalized_projection)
     http_queue.put({'value': volumeDelta, 'time': time.time()})
     print("Normalized", normalized_projection)
     print("Volume", volumeDelta)

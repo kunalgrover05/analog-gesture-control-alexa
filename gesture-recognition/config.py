@@ -33,4 +33,4 @@ ENDPOINT_HOST = "http://192.168.1.10"
 ACTION_TIMEOUT = 1
 
 # The time(in sec) after which an HTTP request to the ESP endpoint times out.
-API_REQUEST_TIMEOUT = 2
+API_REQUEST_TIMEOUT = 5
