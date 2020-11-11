@@ -35,7 +35,7 @@ while(1):
     frameHeight = IMAGE_RESIZE_HEIGHT
     frameWidth = int((IMAGE_RESIZE_HEIGHT/image.shape[0])*image.shape[1])
     image = cv2.resize(image, (frameWidth, frameHeight))
-    print(frameWidth, frameHeight)
+    # print(frameWidth, frameHeight)
     
     inpBlob = cv2.dnn.blobFromImage(image, 1.0 / 255, (inWidth, inHeight),
                               (0, 0, 0), swapRB=False, crop=False)
@@ -47,7 +47,7 @@ while(1):
 
     output = net.forward()
 
-    print("Time Taken in forward pass = {}".format(time.time() - start))
+    # print("Time Taken in forward pass = {}".format(time.time() - start))
 
     points = {}
     for part, i in BODY_PARTS.items():
@@ -100,7 +100,7 @@ while(1):
         continue
     
     # Simply take projection into the volume value.
-    volumeDelta = math.ceil(10 * normalized_projection)
+    volumeDelta = max(-5, min(5, math.ceil(6 * normalized_projection)))
     http_queue.put({'value': volumeDelta, 'time': time.time()})
     print("Normalized", normalized_projection)
     print("Volume", volumeDelta)

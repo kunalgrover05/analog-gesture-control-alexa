@@ -23,7 +23,7 @@ def http_queue_worker():
             # Simple implementation of a queue of size 1, clean up all the elements and
             # process the last element in the queue.
             while not http_queue.empty():
-                print("Emptying queue", item)
+                # print("Emptying queue", item)
                 item = http_queue.get()
                 http_queue.task_done()
             
@@ -31,9 +31,16 @@ def http_queue_worker():
             timeDiff = time.time() - item['time']
             if item and timeDiff <= ACTION_TIMEOUT:
                 print(f'Working on {item}, timeDiff {timeDiff}')
-                last_response = requests.post(ENDPOINT_HOST + '/volume?delta=' + str(item['value']), timeout=API_REQUEST_TIMEOUT)
+                start = time.time()
+
+                # Always when interacting with ESP, use Connection: close in order to free up ESP
+                # resources which can otherwise make it unable to process requests
+                last_response = requests.get(ENDPOINT_HOST + '/volume?delta=' + str(item['value']),
+                                    timeout=API_REQUEST_TIMEOUT,
+                                    headers={'Connection':'close'})
                 print(last_response)
                 print(f'Finished {item}')
+                print("Timetaken is" + str(time.time() - start))
             else:
                 print(f'Skipped stale data {item}, timeDiff {timeDiff}')
         except Exception as e:

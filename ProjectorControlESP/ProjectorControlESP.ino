@@ -23,11 +23,12 @@ WiFiClient espClient;
 
 // setup function for WiFi connection
 void setupWiFi() {
-  Serial.printf("\r\n[Wifi]: Connecting");
+  Serial.print("\r\n[Wifi]: Connecting");
+  WiFi.config(staticIP, gateway, subnet);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   while (WiFi.status() != WL_CONNECTED) {
-    Serial.printf(".");
+    Serial.print(".");
     delay(250);
   }
   IPAddress localIP = WiFi.localIP();
@@ -45,6 +46,10 @@ void setup() {
 }
 
 void loop() {
+  // Reconnect if disconnected
+  if (WiFi.status() != WL_CONNECTED) {
+    setupWiFi();
+  }
   server.handleClient();
   SinricPro.handle();
 }

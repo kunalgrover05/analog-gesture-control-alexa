@@ -7,10 +7,6 @@ rtsp_password = password
 rtsp_url = "192.168.1.14:554"
 RTSP_STREAM = "rtsp://" + rtsp_username + ":" + rtsp_password + "@" + rtsp_url 
 
-# The time(in sec) after which an action is considered stale and is discarded.
-# Having a high timeout can also lead to a lag effect.
-ACTION_TIMEOUT = 2
-
 # The height for resizing the image before processing it through OpenPose. The width
 # is calculated automatically to maintain the aspect ratio.
 # A smaller image will get processed faster at the cost of reduced accuracy.
@@ -33,4 +29,5 @@ ENDPOINT_HOST = "http://192.168.1.10"
 ACTION_TIMEOUT = 1
 
 # The time(in sec) after which an HTTP request to the ESP endpoint times out.
-API_REQUEST_TIMEOUT = 5
+API_REQUEST_TIMEOUT = 6
+

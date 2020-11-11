@@ -21,7 +21,13 @@ void setupSinricPro() {
   myTV.onPowerState(onPowerState);
 
   // setup SinricPro
-  SinricPro.onConnected([](){ Serial.printf("Connected to SinricPro\r\n"); }); 
-  SinricPro.onDisconnected([](){ Serial.printf("Disconnected from SinricPro\r\n"); });
+  SinricPro.onConnected([] (){ 
+    Serial.printf("Connected to SinricPro\r\n");
+    Serial.println(ESP.getFreeHeap());  
+  }); 
+  SinricPro.onDisconnected([] (){
+    Serial.printf("Disconnected from SinricPro\r\n"); 
+    Serial.println(ESP.getFreeHeap());  
+  });
   SinricPro.begin(APP_KEY, APP_SECRET);
 }

@@ -15,23 +15,29 @@ bool onAdjustVolume(int &volumeDelta) {
 }
 
 void handleNotFound() {
-  server.send(404, "text/plain", "404: Not found"); // Send HTTP status 404 (Not Found) when there's no handler for the URI in the request
+  Serial.println("Not found");
+  server.send(404); // Send HTTP status 404 (Not Found) when there's no handler for the URI in the request
 }
 
 void handleVolume() {
+  Serial.println("Got request");
+  unsigned long start = millis();
   if (!server.hasArg("delta")) { // If the POST request doesn't have volume delta, invalid request return 400
-    server.send(400, "text/plain", "400: Invalid Request");
+    server.send(400);
     return;
   }
 
   int delta = server.arg("delta").toInt();
   onAdjustVolume(delta);
-  server.send(200, "text/html", "<h1>Done</h1>");
-  Serial.println("Done");
+  server.send(200);
+
+  unsigned long timeTaken = millis() - start;
+  Serial.printf("Done in %u ms\n", timeTaken);
+  Serial.println(ESP.getFreeHeap());
 }
 
 void setupServer() {
-  server.on("/volume", HTTP_POST, handleVolume);
+  server.on("/volume", HTTP_GET, handleVolume);
   server.onNotFound(handleNotFound);
   server.begin();
 }
